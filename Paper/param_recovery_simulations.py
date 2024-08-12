@@ -501,7 +501,7 @@ df_posterior_means.to_csv(f'{num_trials}trials_{num_subjects}subjects_posterior_
 Save environment
 """
 
-file_name = '/vsc-hard-mounts/leuven-data/343/vsc34314/test.dil'
+file_name = '/vsc-hard-mounts/leuven-data/343/vsc34314/param_recovery_simulations.dil'
 list_of_variable_names = (
     "all_lps", "all_true_params", "all_true_states","all_inf_params", "all_inf_states",
     "all_emissions", "all_inputs",

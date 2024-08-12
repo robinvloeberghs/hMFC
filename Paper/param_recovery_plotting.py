@@ -164,7 +164,6 @@ with PdfPages(f'{num_subjects}subjects_{num_trials}trials_log_joint_prob.pdf') a
       plt.title(r"Dataset {:d}".format(dataset))
       plt.xlabel("Iteration")
       plt.ylabel("Log joint probability")
-      plt.ylim()
 
       pdf.savefig()
       plt.close()

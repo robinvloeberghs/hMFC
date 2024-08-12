@@ -178,8 +178,8 @@ posterior_samples_states = jnp.stack(posterior_samples_states)
 sns.set(style="ticks", context="paper",
         font="Arial",
         rc={"font.size": 25,
-            "axes.titlesize": 25,
-            "axes.labelsize": 25,
+            "axes.titlesize": 20,
+            "axes.labelsize": 20,
             "lines.linewidth": 1.5,
             "xtick.labelsize": 15,
             "ytick.labelsize": 15,
@@ -200,7 +200,6 @@ plt.figure(figsize=(8, 6), dpi=600)
 plt.plot(jnp.stack(lps)/emissions.size) # normalized log joint prob
 plt.xlabel("Iteration")
 plt.ylabel("Log joint probability")
-plt.ylim()
 plt.show()
 
 
