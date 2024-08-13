@@ -650,17 +650,18 @@ def gibbs_step_without_criterion_fluctuations_estimation(key,
 
 
 
-""" 
-Settings for plotting
+"""
+Set seaborn style for plotting figures
 """
 
 sns.set(style="ticks", context="paper",
         font="Arial",
-        rc={"axes.titlesize": 20,
-            "axes.labelsize": 20,
+        rc={"font.size": 24,
+            "axes.titlesize": 23,
+            "axes.labelsize": 23,
             "lines.linewidth": 1.5,
-            "xtick.labelsize": 15,
-            "ytick.labelsize": 15,
+            "xtick.labelsize": 18,
+            "ytick.labelsize": 18,
             "xtick.major.size": 5,
             "ytick.major.size": 5,
             "xtick.minor.size": 2,
@@ -711,7 +712,7 @@ df_model = pd.DataFrame({"index": index, "criterion_fluctuations": criterion_flu
 
 # Plot criterion trajectories
 colors = ["#83aff0","#4779c4","#3c649f","#2c456b"]
-
+plt.figure(figsize=(6, 6), dpi=600)
 plot = sns.relplot(data=df_model, x="index", y="criterion_fluctuations", col="condition", col_wrap=2, kind="line", height=3, aspect=1.5)
 
 for ax, color in zip(plot.axes.flatten(), colors):
@@ -725,7 +726,7 @@ plot.set_xticklabels(np.arange(0, 501, 100), size=15)
 plot.set(yticks=np.arange(-6, 6.01, 2))
 plot.set_yticklabels(np.arange(-6, 6.01, 2), size=15)
 
-plt.savefig("illustration_ar_params.png", bbox_inches='tight', dpi=600)
+plt.savefig("illustration_ar_paramss.png", bbox_inches='tight', dpi=600)
 
 
 
@@ -855,6 +856,7 @@ df_dprime = pd.DataFrame({"d_estimate": d_estimate, "c_estimate": c_estimate, "c
 # Note that generative d prime is absent since we simulate data from the model and not SDT directly
 colors = ["black","#2c456b","#3c649f", "#4779c4", "#83aff0"]
 
+plt.figure(figsize=(7, 6), dpi=600)
 sns.stripplot(
     data=df_dprime, x="condition",hue="condition", y="d_estimate",
     alpha=.3, palette=colors
@@ -865,15 +867,12 @@ sns.pointplot(
     markersize=6, markeredgewidth=3,palette=colors
 )
 
-plt.axhline(y=1.085, color='red', linestyle='--', label='y = 1')
-plt.xlabel('Condition', size=18)
-plt.ylabel("Estimated d'", size=18)
-plt.xticks(size=15)
-plt.yticks(size=15)
+plt.axhline(y=1.085, color='red', linestyle='--')
+plt.xlabel('Condition')
+plt.ylabel("Estimated d'")
 plt.legend('', frameon=False)
-sns.despine()
 
-plt.savefig("underestimation_dprime.png", bbox_inches='tight', dpi=600)
+plt.savefig("underestimation_dprimee.png", bbox_inches='tight', dpi=600)
 
 
 
@@ -901,7 +900,6 @@ plt.xticks(size=15)
 plt.yticks(size=15)
 plt.ylim(-.3,.3)
 plt.legend('', frameon=False)
-sns.despine()
 
 plt.savefig("estimation_criterion.jpeg", bbox_inches='tight', dpi=600)
 
@@ -996,7 +994,7 @@ df_psychometric["condition"] = pd.Categorical(df_psychometric["condition"], cate
 
 # Plotting
 colors = ["#83aff0","#4779c4","#3c649f","#2c456b","black"]
-
+plt.figure(figsize=(8, 6), dpi=600)
 ax = df_psychometric.groupby(["evidence", "condition"])["mean_resp"].mean().unstack().plot(
     style='o-', markerfacecolor='white', markersize=5, color=colors)
 
@@ -1008,12 +1006,11 @@ ax.tick_params(axis='y', labelsize=15)
 
 # Reversing the order of legend labels
 handles, labels = ax.get_legend_handles_labels()
-ax.legend(reversed(handles), reversed(labels), title="Condition", loc="upper left")
-sns.despine()
+ax.legend(reversed(handles), reversed(labels), title="Condition", loc="upper left", fontsize=10)
 ax.grid(False)
 
 
-plt.savefig("underestimation_psychometric_slope.png", bbox_inches='tight', dpi=600)
+plt.savefig("underestimation_psychometric_slopee.png", bbox_inches='tight', dpi=600)
 
 
 
@@ -1036,7 +1033,6 @@ p_psychometric.tick_params(axis='x', labelsize=17)
 p_psychometric.tick_params(axis='y', labelsize=23)
 p_psychometric.legend([]) # drop legend
 
-sns.despine()
 p_psychometric.grid(False)
 
 plt.savefig("underestimation_psychometric_slope_zoomed_in.png", bbox_inches='tight', dpi=600)
@@ -1103,7 +1099,7 @@ df_sequential = pd.DataFrame({"p_repeat": p_repeat, "condition": condition})
 
 # Plotting
 colors = ["black","#2c456b","#3c649f", "#4779c4", "#83aff0"]
-
+plt.figure(figsize=(8, 6), dpi=600)
 sns.stripplot(
     data=df_sequential, x="condition",hue="condition", y="p_repeat",
     alpha=.3, palette=colors
@@ -1121,9 +1117,8 @@ plt.ylabel("P(repeat response)", fontsize=18)
 plt.yticks(fontsize=15)
 plt.xticks(fontsize=13)
 plt.legend('', frameon=False)
-sns.despine()
 
-plt.savefig("repetition_effects.png", bbox_inches='tight', dpi=600)
+plt.savefig("repetition_effectss.png", bbox_inches='tight', dpi=600)
 
 
 
