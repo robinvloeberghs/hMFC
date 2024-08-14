@@ -8,8 +8,8 @@ Repository for the Hierarchical Model for Fluctuations in Criterion (hMFC), a hi
 ```
 
 1. Create new conda environment and activate it
-conda create -n dynamax_env
-conda activate dynamax_env
+conda create -n hmfc_env
+conda activate hmfc_env
 
 2. Install jaxlib, which is needed to install jax and dynamax
 pip install jaxlib
