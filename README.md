@@ -12,32 +12,41 @@ Contact: Robin Vloeberghs (robin.vloeberghs@kuleuven.be) / Scott Linderman (scot
 ---
 
 #### Installation
+
+This model is written in Python, so you'll need to have a program to run Python code.
+
+**1. Install Anaconda**
+   * Download and install Anaconda by following the instructions provided at this link: [Anaconda Installation Guide](https://docs.anaconda.com/anaconda/install/)
+
+**2. Open Anaconda Prompt**
+   * Launch Anaconda Prompt from your Start menu or application launcher.
+   
+**3. Create and Activate a New Conda Environment** 
+   * Create a new conda environment named `hmfc` with Python 3.10:
 ```bash
-1. Install Anaconda using following link
-https://docs.anaconda.com/anaconda/install/
-
-2. Open Anaconda Prompt
-
-3. Create new conda environment and activate it
 conda create -n hmfc python=3.10
 conda activate hmfc
-
-4. Install packages
+```
+**4. Install Required Packages**
+   * Install the required packages using the following commands:
+```bash
 conda install pip==24.2
 pip install equinox==0.11.7
 pip install seaborn==0.13.2
 pip install matplotlib==3.9.2
-
-5. Install dynamax
+pip install dill==0.3.8
+```
+**5. Install Dynamax**
+   * Clone the Dynamax repository and install it:
+```bash
 git clone https://github.com/probml/dynamax
 cd dynamax
 pip install -e.
-
 ```
 
 #### Getting started
 
-In your favorite Python IDE (e.g. Spyder):
+Open your favorite Python IDE (for example Spyder):
 ```python
 conda activate hmfc
 spyder
