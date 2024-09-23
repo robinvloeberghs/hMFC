@@ -9,6 +9,17 @@ Fitting hMFC to a simulated dataset
 """
 
 
+
+"""
+IMPORTANT
+
+The file hmfc.py contains all the code for the model. It will be loaded in below so
+make sure that the working directory is set to the location that contains hmfc.py
+
+The time the model needs to fit strongly depends on the number of iterations. 
+To decrease the computation time, it is recommended to run the model on CPU's.
+"""
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
@@ -29,7 +40,7 @@ import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
-from hmfc import *
+from hmfc import * # make sure hmfc.py is located in current working directory
 
 
 
@@ -37,7 +48,7 @@ from hmfc import *
 """ Specify some variables and the true value for the hierarchical (global/group) parameters
    
     num_iters: number of iterations for the estimation procedure
-    num_inputs: number of input variables
+    num_inputs: number of input variables (this should include the intercept, so for example X1,X2,X3 is num_inputs=4, namely three variables plus one intercept)
     num_subjects: number of subjects
     num_trials: number of trials per subject
    
@@ -49,12 +60,10 @@ from hmfc import *
     true_beta: true beta of inverse gamma for sigma_sq
 """
 
-num_subjects = 50
-num_trials = 500
-num_iters = 100
+num_subjects = 5 #50
+num_trials = 50 #500
+num_iters = 10 #500 # number of iterations should be > 500 
 num_inputs = 4 
-burn_in = 0
-
 
 true_a0 = 0.99
 true_nu_a0 = 0.025
@@ -122,7 +131,6 @@ params, states, _ = model.sample(key, inputs)
     Iteratively runs the blocked Gibbs sampling algorithm
     On each iteration, it saves the posterior samples for the global and local parameters, and the states (criterion trajectory)
 """
-# TODO: make this code more efficient
 
 lps = [] # log probability
 
@@ -194,7 +202,16 @@ sns.set(style="ticks", context="paper",
 
 
 """ Check log joint probability to assess convergence and determine number of burn-in iterations
+
+Ideally, the log joint probability should stabilize and fluctuate around a certain value for a couple of hundereds iterations.
+If it is still clearly increasing then rerun the model with more iterations. The first iterations where the log joint probability
+is still increasing should be considered burn-in.
 """
+
+# burn_in are the first number of iterations you want to discard before the model is not sampling
+# from the true posterior yet
+
+burn_in = 100 # choose a different value informed by the plot below
 
 plt.figure(figsize=(8, 6), dpi=600)
 plt.plot(jnp.stack(lps)/emissions.size) # normalized log joint prob
@@ -208,8 +225,8 @@ plt.show()
 """
 
 # calculate posterior mean and std over iterations for each trial without burn_in trials
-posterior_samples_states_mean = jnp.mean(posterior_samples_states[:,:,burn_in:], axis=0) 
-posterior_samples_states_std = jnp.std(posterior_samples_states[:,:,burn_in:], axis=0)
+posterior_samples_states_mean = jnp.mean(posterior_samples_states[burn_in:,:,:], axis=0) 
+posterior_samples_states_std = jnp.std(posterior_samples_states[burn_in:,:,:], axis=0)
 
 with PdfPages(f'{num_subjects}subjects_{num_trials}trials_estimated_states.pdf') as pdf:
   for subject in range(num_subjects):

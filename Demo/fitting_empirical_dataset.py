@@ -9,6 +9,17 @@ Fitting hMFC to an empirical dataset
 """
 
 
+
+"""
+IMPORTANT
+
+The file hmfc.py contains all the code for the model. It will be loaded in below so
+make sure that the working directory is set to the location that contains hmfc.py
+
+The time the model needs to fit strongly depends on the number of iterations. 
+To decrease the computation time, it is recommended to run the model on CPU's.
+"""
+
 import equinox as eqx
 import jax
 import jax.numpy as jnp
@@ -32,20 +43,24 @@ import numpy as np
 from hmfc import * # make sure hmfc.py is located in current working directory
 
 
+
 """ Load in dataset
 
     Should be in long format. Following columns have to be present:
         'subj': indicating subject number
         'resp': indicating the responses or emissions (should be 0 and 1)
         all the input variables you want to include as predictor in the model (e.g. stimulus, previous response,...)
+        
+    num_inputs:
+        Indicate number of input variables that will be used in the model.
+        Basically, how many predictors do you want to use to predict 'response'.
+        Take that number and do +1 for the model to include an intercept
+        For example: intercept, stimulus, previous resp, previous stimulus -> num_input = 4
     
 """
 
-# TODO: provide example df?
 data = pd.read_csv('YOUR_DF_HERE.csv')
 
-# Indicate number of input variables that will be used in the model (intercept should be added as well)
-# For example: intercept, stimulus, previous resp, previous stimulus -> num_input = 4
 num_inputs = 4 
 
 
@@ -67,13 +82,16 @@ inputs, emissions, masks = [], [], []
 for i in np.unique(data.subj):
     df = data[data.subj == i]
     
-    """ Adjust the names of the variables below according to your dataset
+    """ 
+    IMPORTANT 
+    
+    Adjust the names of the variables below according to your dataset (df.evidence, df.prev_evidence, df.prev_resp)
     """
     
     intercept = jnp.repeat(1, len(df)) # 1 everywhere for model to know this is an intercept
     evidence = jnp.array(df.evidence)  # scaled between -1 and 1
-    prevevidence = jnp.array(df.prev_evidence)  # -1 left, 1 right
-    prevresp = jnp.array(df.prev_resp)  # -1 left, 1 right
+    prevevidence = jnp.array(df.prevsignevi)  # -1 left, 1 right
+    prevresp = jnp.array(df.prevresp)  # -1 left, 1 right
 
     resp = jnp.array(df.resp)
 
@@ -117,7 +135,7 @@ masks = jnp.array(masks)
 
 """
 
-num_iters = 10
+num_iters = 500 # number of iterations should be > 500 
 num_trials = max_num_trials # set to number trials of subject with most trials, masking takes care of the other subjects
 num_subjects = len(inputs)
 
@@ -160,7 +178,6 @@ params, states, _ = model.sample(key, inputs) # sample initial per-subject param
     Iteratively runs the blocked Gibbs sampling algorithm
     On each iteration, it saves the posterior samples for the global and local parameters, and the states (criterion trajectory)
 """
-# TODO: make this code more efficient
 
 lps = [] # log probability
 
@@ -234,7 +251,16 @@ sns.set(style="ticks", context="paper",
 
 
 """ Check log joint probability to assess convergence and determine number of burn-in iterations
+
+Ideally, the log joint probability should stabilize and fluctuate around a certain value for a couple of hundereds iterations.
+If it is still clearly increasing then rerun the model with more iterations. The first iterations where the log joint probability
+is still increasing should be considered burn-in.
 """
+
+# burn_in are the first number of iterations you want to discard before the model is not sampling
+# from the true posterior yet
+
+burn_in = 100 # choose a different value informed by the plot below
 
 plt.figure(figsize=(8, 6), dpi=600)
 plt.plot(jnp.stack(lps)/emissions.size) # normalized log joint prob
@@ -245,7 +271,7 @@ plt.show()
 
 
 
-burn_in = 0 # number of iterations to discard
+
 
 
 
@@ -480,8 +506,8 @@ plt.show()
 """
 
 # calculate posterior mean and std over iterations for each trial without burn_in trials
-posterior_samples_states_mean = jnp.mean(posterior_samples_states[:,:,burn_in:], axis=0) 
-posterior_samples_states_std = jnp.std(posterior_samples_states[:,:,burn_in:], axis=0)
+posterior_samples_states_mean = jnp.mean(posterior_samples_states[burn_in:,:,:], axis=0) 
+posterior_samples_states_std = jnp.std(posterior_samples_states[burn_in:,:,:], axis=0)
 
 with PdfPages("estimated_criterion_fluctuations.pdf") as pdf:
   for subject in range(num_subjects):
@@ -505,7 +531,7 @@ with PdfPages("estimated_criterion_fluctuations.pdf") as pdf:
 
 
 
-""" Save the estimated criterion fluctuations
+""" Save the estimated criterion fluctuations by adding them to original dataframe
 """
 estimated_criterion_fluctuations = []
 
@@ -514,7 +540,7 @@ for subject in range(num_subjects):
 
 estimated_criterion_fluctuations = jnp.concatenate(estimated_criterion_fluctuations)
 
-df_estimated_criterion_fluctuations = pd.DataFrame({'subj':data.subj,
-                                                   'estimated_criterion_fluctuations':estimated_criterion_fluctuations})
+data['criterion_fluctuations'] = estimated_criterion_fluctuations
 
-df_estimated_criterion_fluctuations.to_csv('estimated_criterion_fluctuations.csv', index=False)
+data.to_csv('YOUR_DF_HERE.csv', index=False)
+

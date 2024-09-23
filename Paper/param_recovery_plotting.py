@@ -39,9 +39,9 @@ sns.set(style="ticks", context="paper",
         font="Arial",
         rc={"font.size": 25,
             "axes.titlesize": 25,
-            "axes.labelsize": 25,
+            "axes.labelsize": 27,
             "lines.linewidth": 1.5,
-            "xtick.labelsize": 15,
+            "xtick.labelsize": 22,
             "ytick.labelsize": 15,
             "xtick.major.size": 5,
             "ytick.major.size": 5,
@@ -1369,3 +1369,342 @@ plot_corrected_post_means(
     ylim=(-0.28, 0.38), #(-0.35, 0.6) 
     file_name=f"nu_w1_{num_subjects}subjects_{num_trials}trials.png"
 )
+
+
+
+"""
+Alternative plot for posteriors
+
+CLEAN UP THIS MESS
+"""
+
+# Load in the different dil files
+# Because variables within these dil files have the same names we have to rename them
+num_trials=500
+
+file_25 = file_paths_mapping.get((num_trials, 25))
+file_50 = file_paths_mapping.get((num_trials, 50))
+file_100 = file_paths_mapping.get((num_trials, 100))
+file_200 = file_paths_mapping.get((num_trials, 200))
+
+load_dill_file(file_25[0])
+
+posterior_samples_alpha_25 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_25 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_25 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_25 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_25 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_25 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+load_dill_file(file_50[0])
+
+posterior_samples_alpha_50 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_50 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_50 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_50 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_50 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_50 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+load_dill_file(file_100[0])
+
+posterior_samples_alpha_100 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_100 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_100 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_100 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_100 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_100 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+
+load_dill_file(file_200[0])
+
+posterior_samples_alpha_200 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_200 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_200 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_200 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_200 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_200 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+
+
+def plot_corrected_posteriors(datasets_list, true_params, x_label, x_lim, y_lim, param, dataset, filename):
+    # Stack datasets
+    datasets = jnp.stack([jnp.stack(df) for df in datasets_list])
+    
+    # Subtract true parameters
+    corrected_datasets = datasets - true_params
+    
+    # Create subplots
+    fig, axs = plt.subplots(4, 1, figsize=(5, 10), sharex=True, dpi=600)
+    
+    sns.kdeplot(
+        data=df_example_post[df_example_post['dataset'] == dataset], 
+        x=param, 
+        hue='num_subjects', 
+        hue_order=[25, 50, 100], 
+        ax=axs[0],  # Moved to the top
+        bw_adjust=2, fill=True, alpha=0.5, linewidth=0
+    )
+    axs[0].set_yticks([])
+    axs[0].yaxis.set_tick_params(size=0)
+    axs[0].xaxis.set_tick_params(size=0)
+    # Loop through other datasets and corresponding axes
+    for i, dataset in enumerate(corrected_datasets):
+        # Plot the dataset for specific posterior
+        for posterior in dataset:
+            sns.kdeplot(
+                posterior, bw_adjust=2, ax=axs[i + 1],  # Shift by 1 for the remaining axes
+                fill=True, color=colors[i], alpha=0.2, linewidth=0
+            )
+        axs[i + 1].set_ylabel("Density")  # Shifted to axs[i + 1]
+        axs[i + 1].set_xlim(x_lim)
+        axs[i + 1].set_ylim(y_lim)
+        axs[i + 1].set_yticks([])
+        axs[i + 1].yaxis.set_tick_params(size=0)
+        axs[i + 1].xaxis.set_tick_params(size=0)
+    
+    axs[-1].set_xlabel(x_label)
+    axs[-1].xaxis.set_tick_params(size=5)
+    
+
+    plt.tight_layout()
+    plt.savefig(filename,transparent=True)
+    plt.show()
+
+
+
+df_posterior_mean_subj = pd.concat([data500_25subj_posterior_mean, data500_posterior_mean, data500_100subj_posterior_mean], axis=0)
+df_posterior_mean_subj['dataset'] = np.arange(0,num_datasets).tolist() * 3 # 3 levels of number of subjects
+colors=['#A5B8D7','#ECBFA5','#A9D3B3']
+
+
+
+corrected_posterior_a0 = (jnp.array([posterior_samples_a0_25,posterior_samples_a0_50,posterior_samples_a0_100]) - jnp.array(df_posterior_mean_subj['mean_subject_true_a']).reshape(3,50,1)).flatten()
+corrected_posterior_nu_a0 = (jnp.array([posterior_samples_nu_a0_25,posterior_samples_nu_a0_50,posterior_samples_nu_a0_100]) - jnp.array(df_posterior_mean_subj['sd_subject_true_a']).reshape(3,50,1)).flatten()
+corrected_posterior_alpha = (jnp.array([posterior_samples_alpha_25,posterior_samples_alpha_50,posterior_samples_alpha_100]) - true_alpha).flatten()
+corrected_posterior_beta = (jnp.array([posterior_samples_beta_25,posterior_samples_beta_50,posterior_samples_beta_100]) - true_beta).flatten()
+# we take the intercept (doesn't matter, plots look the same for all input variables)
+corrected_posterior_w0 = (jnp.array([jnp.stack(posterior_samples_w0_25)[:,:,0], jnp.stack(posterior_samples_w0_50)[:,:,0], jnp.stack(posterior_samples_w0_100)[:,:,0]]) - jnp.array(df_posterior_mean_subj['mean_subject_true_w0']).reshape(3,50,1)).flatten()
+corrected_posterior_nu_w0 = (jnp.array([jnp.stack(posterior_samples_nu_w0_25)[:,:,0], jnp.stack(posterior_samples_nu_w0_50)[:,:,0], jnp.stack(posterior_samples_nu_w0_100)[:,:,0]]) - jnp.array(df_posterior_mean_subj['sd_subject_true_w0']).reshape(3,50,1)).flatten()
+
+num_subjects = jnp.repeat(jnp.array([25,50,100]),50*1000) #50 datasets * 1000 iterations
+dataset = jnp.tile(jnp.repeat(jnp.arange(0,num_datasets),1000, axis=0),3)
+
+df_example_post = pd.DataFrame({
+        'a0': corrected_posterior_a0,
+        'nu_a0': corrected_posterior_nu_a0,
+        'alpha': corrected_posterior_alpha,
+        'beta': corrected_posterior_beta,
+        'w0': corrected_posterior_w0,
+        'nu_w0': corrected_posterior_nu_w0,
+        'num_subjects': num_subjects,
+        'dataset': dataset})
+
+df_example_post['num_subjects']= pd.Categorical(df_example_post['num_subjects'], categories=[25, 50, 100])
+
+
+
+# Posteriors a0
+plot_corrected_posteriors(
+    datasets_list=[posterior_samples_a0_25, posterior_samples_a0_50, posterior_samples_a0_100],
+    true_params=jnp.array(df_posterior_mean_subj['mean_subject_true_a']).reshape(3,50,1),
+    x_label=r"Corrected posterior $a_0$",
+    x_lim=(-.05, .05),
+    y_lim=(0, 200),
+    param='a0',
+    dataset=4,
+    filename='corrected_posteriors_a0.png'
+)
+
+# Posteriors nu_a0
+plot_corrected_posteriors(
+    datasets_list=[posterior_samples_nu_a0_25, posterior_samples_nu_a0_50, posterior_samples_nu_a0_100],
+    true_params=jnp.array(df_posterior_mean_subj['sd_subject_true_a']).reshape(3,50,1),
+    x_label=r"Corrected posterior $\nu_{a_0}$",
+    x_lim=(-.07, .07),
+    y_lim=(0, 150),
+    param='nu_a0',
+    dataset=4,
+    filename='corrected_posteriors_nu_a0.png'
+)
+
+# Posteriors alpha
+plot_corrected_posteriors(
+    datasets_list=[posterior_samples_alpha_25, posterior_samples_alpha_50, posterior_samples_alpha_100],
+    true_params=true_alpha,
+    x_label=r"Corrected posterior $\alpha$",
+    x_lim=(-7,7),
+    y_lim=(0,1),
+    param='alpha',
+    dataset=10,
+    filename='corrected_posteriors_alpha.png'
+)
+
+# Posteriors beta
+plot_corrected_posteriors(
+    datasets_list=[posterior_samples_beta_25, posterior_samples_beta_50, posterior_samples_beta_100],
+    true_params=true_beta,
+    x_label=r"Corrected posterior $\beta$",
+    x_lim=(-1.3, 1.3),
+    y_lim=(0,10),
+    param='beta',
+    dataset=10,
+    filename='corrected_posteriors_beta.png'
+)
+
+# Posteriors w0
+plot_corrected_posteriors(
+    datasets_list=[jnp.stack(posterior_samples_w0_25)[:,:,0], jnp.stack(posterior_samples_w0_50)[:,:,0], jnp.stack(posterior_samples_w0_100)[:,:,0]],
+    true_params=jnp.array(df_posterior_mean_subj['mean_subject_true_w0']).reshape(3,50,1),
+    x_label=r"Corrected posterior $w_0$",
+    x_lim=(-1, 1),
+    y_lim=(0, 6),
+    param='w0',
+    dataset=10,
+    filename='corrected_posteriors_w0.png'
+)
+
+# Posteriors nu_w0
+plot_corrected_posteriors(
+    datasets_list=[jnp.stack(posterior_samples_nu_w0_25)[:,:,0], jnp.stack(posterior_samples_nu_w0_50)[:,:,0], jnp.stack(posterior_samples_nu_w0_100)[:,:,0]],
+    true_params=jnp.array(df_posterior_mean_subj['sd_subject_true_w0']).reshape(3,50,1),
+    x_label=r"Corrected posterior $\nu_{w_0}$",
+    x_lim=(-1, 1),
+    y_lim=(0, 7),
+    param='nu_w0',
+    dataset=10,
+    filename='corrected_posteriors_nu_w0.png'
+)
+
+
+
+
+
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==4], x='a0',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-.04,.04)
+plt.xlabel(r"$a_0$")
+plt.legend().remove()
+plt.show()
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==4], x='nu_a0',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-.04,.04)
+plt.xlabel(r"$\nu_{a_0}$")
+#plt.legend().remove()
+plt.show()
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==10], x='alpha',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-7,7)
+plt.xlabel(r"$\alpha$")
+#plt.legend().remove()
+plt.show()
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==10], x='beta',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-1,1)
+plt.xlabel(r"$\beta$")
+#plt.legend().remove()
+plt.show()
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==10], x='beta',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-1,1)
+plt.xlabel(r"$\beta$")
+#plt.legend().remove()
+plt.show()
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==10], x='w0',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-1,1)
+plt.xlabel(r"$w_0$")
+#plt.legend().remove()
+plt.show()
+
+plt.figure(figsize=(8, 6), dpi=600)
+sns.kdeplot(data=df_example_post[df_example_post['dataset']==10], x='nu_w0',hue='num_subjects',hue_order=[25,50,100],bw_adjust=2, fill=True, alpha=0.5, linewidth=0)
+plt.xlim(-1,1)
+plt.xlabel(r"$\nu_{w_0}$")
+#plt.legend().remove()
+plt.show()
+
+
+
+
+
+
+
+
+"""
+Plots with number of trials
+"""
+# Load in the different dil files
+# Because variables within these dil files have the same names we have to rename them
+num_subjects=50
+
+file_500trials = file_paths_mapping.get((500, num_subjects))
+file_1000trials = file_paths_mapping.get((1000, num_subjects))
+file_2500trials = file_paths_mapping.get((2500, num_subjects))
+file_5000trials = file_paths_mapping.get((5000, num_subjects))
+
+load_dill_file(file_500trials[0])
+
+posterior_samples_alpha_500 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_500 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_500 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_500 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_500 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_500 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+load_dill_file(file_1000trials[0])
+
+posterior_samples_alpha_1000 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_1000 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_1000 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_1000 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_1000 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_1000 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+load_dill_file(file_2500trials[0])
+
+posterior_samples_alpha_2500 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_2500 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_2500 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_2500 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_2500 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_2500 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+
+load_dill_file(file_5000trials[0])
+
+posterior_samples_alpha_5000 = jnp.stack(all_posterior_samples_alpha)[:,burn_in:]
+posterior_samples_beta_5000 = jnp.stack(all_posterior_samples_beta)[:,burn_in:]
+posterior_samples_a0_5000 = jnp.stack(all_posterior_samples_a0)[:,burn_in:]
+posterior_samples_nu_a0_5000 = jnp.stack(all_posterior_samples_nu_a0)[:,burn_in:]
+posterior_samples_w0_5000 = jnp.stack(all_posterior_samples_w_0)[:,burn_in:,:]
+posterior_samples_nu_w0_5000 = jnp.stack(all_posterior_samples_nu_w0)[:,burn_in:,:]
+
+
+corrected_posterior_a0 = (jnp.array([posterior_samples_a0_500,posterior_samples_a0_1000,posterior_samples_a0_2500,posterior_samples_a0_5000]) - jnp.array(df_posterior_means['mean_subject_true_a']).reshape(4,50,1)).flatten()
+corrected_posterior_nu_a0 = (jnp.array([posterior_samples_nu_a0_500,posterior_samples_nu_a0_1000,posterior_samples_nu_a0_2500,posterior_samples_nu_a0_5000]) - jnp.array(df_posterior_means['sd_subject_true_a']).reshape(4,50,1)).flatten()
+corrected_posterior_alpha = (jnp.array([posterior_samples_alpha_500,posterior_samples_alpha_1000,posterior_samples_alpha_2500,posterior_samples_alpha_5000]) - true_alpha).flatten()
+corrected_posterior_beta = (jnp.array([posterior_samples_beta_500,posterior_samples_beta_1000,posterior_samples_beta_2500,posterior_samples_beta_5000]) - true_beta).flatten()
+# we take the intercept (doesn't matter, plots look the same for all input variables)
+corrected_posterior_w0 = (jnp.array([jnp.stack(posterior_samples_w0_500)[:,:,0], jnp.stack(posterior_samples_w0_1000)[:,:,0], jnp.stack(posterior_samples_w0_2500)[:,:,0], jnp.stack(posterior_samples_w0_5000)[:,:,0]]) - jnp.array(df_posterior_means['mean_subject_true_w0']).reshape(4,50,1)).flatten()
+corrected_posterior_nu_w0 = (jnp.array([jnp.stack(posterior_samples_nu_w0_500)[:,:,0], jnp.stack(posterior_samples_nu_w0_1000)[:,:,0], jnp.stack(posterior_samples_nu_w0_2500)[:,:,0], jnp.stack(posterior_samples_nu_w0_5000)[:,:,0]]) - jnp.array(df_posterior_means['sd_subject_true_w0']).reshape(4,50,1)).flatten()
+
+num_trials = jnp.repeat(jnp.array([500,1000,2500,5000]),50*1000) #50 datasets * 1000 iterations
+dataset = jnp.tile(jnp.repeat(jnp.arange(0,num_datasets),1000, axis=0),4)
+
+df_example_post_trials = pd.DataFrame({
+        'a0': corrected_posterior_a0,
+        'nu_a0': corrected_posterior_nu_a0,
+        'alpha': corrected_posterior_alpha,
+        'beta': corrected_posterior_beta,
+        'w0': corrected_posterior_w0,
+        'nu_w0': corrected_posterior_nu_w0,
+        'num_subjects': num_subjects,
+        'dataset': dataset})
+
+df_example_post_trials['num_trials']= pd.Categorical(df_example_post_trials['num_trials'], categories=[500, 1000, 2500, 5000])

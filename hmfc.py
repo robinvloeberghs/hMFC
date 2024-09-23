@@ -597,7 +597,6 @@ def simulate_one_dataset(key):
     bad_subjects = jnp.where(jnp.max(abs(true_states),axis=1) > crit_value)[0] # check for each subject the absolute true_states exceed crit_value
     
     if bad_subjects.size > 0:
-        print('abs(true states) > crit_value detected')
         for subj in bad_subjects:
             print(subj)
             # Call the true params and input from bad subject
@@ -656,7 +655,7 @@ def simulate_one_dataset(key):
 
     return true_params, true_states, emissions, inputs, masks
 
-    
+# Used when simulating multiple datasets
 def simulate_and_fit_model(keys):
     key = jr.PRNGKey(keys)
 
@@ -719,8 +718,16 @@ def simulate_and_fit_model(keys):
     posterior_samples_a = jnp.stack(posterior_samples_a)
     posterior_samples_sigmasq = jnp.stack(posterior_samples_sigmasq)
     posterior_samples_w = jnp.stack(posterior_samples_w)
-
-    #posterior_samples_states = jnp.stack(posterior_samples_states) # could result in internal memory issues (jnp.concatenate) with large number of iterations
+    
+    """
+    In case of memory issues (especially when simulating many datasets jnp.concatenate can give some trouble), 
+    use posterior_samples_states = jnp.stack(states_sum) instead of posterior_samples_states = jnp.stack(posterior_samples_states).
+    This solves the issue by not explicitly saving all the states on each iteration
+    but summing them to be able to calculate the mean for each trial over all iterations
+    with the lowest memory requirements. Downside is that only those are summed after the burn-in period,
+    which is hard to determine before running the model.
+    """
+    #posterior_samples_states = jnp.stack(posterior_samples_states) 
     posterior_samples_states = jnp.stack(states_sum) 
     posterior_samples_states_squared = jnp.stack(states_sum_squared)
 

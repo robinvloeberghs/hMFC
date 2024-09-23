@@ -27,7 +27,7 @@ import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
-from hmfc import *
+from hmfc import * # make sure hmfc.py is located in current working directory
 
 
 
