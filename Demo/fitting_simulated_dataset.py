@@ -60,9 +60,9 @@ from hmfc import * # make sure hmfc.py is located in current working directory
     true_beta: true beta of inverse gamma for sigma_sq
 """
 
-num_subjects = 5 #50
-num_trials = 50 #500
-num_iters = 10 #500 # number of iterations should be > 500 
+num_subjects = 50
+num_trials = 500
+num_iters = 500 # number of iterations should be > 500 
 num_inputs = 4 
 
 true_a0 = 0.99
@@ -329,6 +329,8 @@ for d, ax in enumerate(axs):
 
 
 
+
+
 # ================================================================== #
 # GLOBAL (HIERARCHICAL) PARAMETERS
 # ================================================================== #
@@ -336,39 +338,42 @@ for d, ax in enumerate(axs):
 """ Posterior distributions of w0 (mean of normal distribution for w_i)
 """
 
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
+fig = plt.figure(figsize=(15, 10), dpi=600)
+fig.suptitle("Posterior distributions (top), posterior values over time (bottom)", fontsize=16)
+
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of w0 
+gs_top = gs[0].subgridspec(1, num_inputs, wspace=0.3)
+axs_top = [fig.add_subplot(gs_top[0, i]) for i in range(num_inputs)]
 
 mean_true_per_subject_w = jnp.mean(true_params['w'], axis=0)
-for d, ax in enumerate(axs):
-    ax.hist(posterior_samples_w0[burn_in:, d], bins=30)
+for d, ax in enumerate(axs_top):
+    ax.hist(posterior_samples_w0[burn_in:, d], bins=30, alpha=0.7)
     ax.axvline(x=true_w0[d], color='black', linewidth=3)
     ax.axvline(x=mean_true_per_subject_w[d], color='red', linewidth=3)
     
     if d == 0:
         ax.set_ylabel("Count", fontsize=15)
     ax.set_xlabel(r"$w_{:d}$".format(d), fontsize=15)
-    
-fig.legend([r"True $w$", r'Mean true per-subject $w_i$'])
-plt.show()
-      
-  
 
-""" Posterior distributions of w0 (mean of normal distribution for w_i) shown over time
-"""
+# Bottom plot: Posterior values of w0 over iterations
+gs_bottom = gs[1].subgridspec(1, num_inputs, wspace=0.3)
+axs_bottom = [fig.add_subplot(gs_bottom[0, i]) for i in range(num_inputs)]
 
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
-
-mean_true_per_subject_w = jnp.mean(true_params['w'], axis=0)
-for d, ax in enumerate(axs):
+for d, ax in enumerate(axs_bottom):
     ax.plot(posterior_samples_w0[burn_in:, d])
     ax.axhline(y=true_w0[d], color='black')
     ax.axhline(y=mean_true_per_subject_w[d], color='red')
     ax.set_xlabel("Iteration", fontsize=15)
     ax.set_ylabel(r"$w_{:d}$".format(d), fontsize=15)
-    
-fig.legend([Line2D([0], [0], color='black'), Line2D([0], [0], color='red')],[r"True $w$", r'Mean true per-subject $w_i$']) # fix to have black line in legend (without it is blue)
+
+fig.legend([Line2D([0], [0], color='black', linewidth=3), 
+            Line2D([0], [0], color='red', linewidth=3)],
+           [r"True $w$", r"Mean true per-subject $w_i$"], 
+           loc='upper right', fontsize=15) 
+
+plt.tight_layout(rect=[0, 0, 1, .97])  # adjust layout to fit the title
 plt.show()
 
 
@@ -376,38 +381,42 @@ plt.show()
 """ Posterior distributions of nu_w0 (variance of normal distribution for w_i)
 """
 
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
+fig = plt.figure(figsize=(15, 10), dpi=600)
+fig.suptitle("Posterior distributions (top), posterior values over time (bottom)", fontsize=16)
 
-sd_true_per_subject_w = jnp.std(true_params['w'], axis=0)
-for d, ax in enumerate(axs):
-    ax.hist(posterior_samples_nu_w0[burn_in:, d], bins=30)
-    ax.axvline(x=true_nu_w0[d], color='black')
-    ax.axvline(x=sd_true_per_subject_w[d], color='red')
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of w0 
+gs_top = gs[0].subgridspec(1, num_inputs, wspace=0.3)
+axs_top = [fig.add_subplot(gs_top[0, i]) for i in range(num_inputs)]
+
+std_true_per_subject_w = jnp.std(true_params['w'], axis=0)
+for d, ax in enumerate(axs_top):
+    ax.hist(posterior_samples_nu_w0[burn_in:, d], bins=30, alpha=0.7)
+    ax.axvline(x=true_nu_w0[d], color='black', linewidth=3)
+    ax.axvline(x=std_true_per_subject_w[d], color='red', linewidth=3)
+    
     if d == 0:
         ax.set_ylabel("Count", fontsize=15)
     ax.set_xlabel(r"$\nu_{{w_{:d}}}$".format(d), fontsize=15)
 
-fig.legend([r"True $\nu_w$", r'Std true per-subject $w_i$'])
-plt.show()
+# Bottom plot: Posterior values of w0 over iterations
+gs_bottom = gs[1].subgridspec(1, num_inputs, wspace=0.3)
+axs_bottom = [fig.add_subplot(gs_bottom[0, i]) for i in range(num_inputs)]
 
-
-
-""" Posterior distributions of nu_w0 (variance of normal distribution for w_i) shown over time
-"""
-
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
-
-sd_true_per_subject_w = jnp.std(true_params['w'], axis=0)
-for d, ax in enumerate(axs):
+for d, ax in enumerate(axs_bottom):
     ax.plot(posterior_samples_nu_w0[burn_in:, d])
     ax.axhline(y=true_nu_w0[d], color='black')
-    ax.axhline(y=sd_true_per_subject_w[d], color='red')
+    ax.axhline(y=std_true_per_subject_w[d], color='red')
     ax.set_xlabel("Iteration", fontsize=15)
     ax.set_ylabel(r"$\nu_{{w_{:d}}}$".format(d), fontsize=15)
 
-fig.legend([Line2D([0], [0], color='black'), Line2D([0], [0], color='red')],[r"True $\nu_w$", r'Std true per-subject $w_i$']) # fix to have black line in legend (without it is blue)
+fig.legend([Line2D([0], [0], color='black', linewidth=3), 
+            Line2D([0], [0], color='red', linewidth=3)],
+           [r"True $\nu_w$", r"Std true per-subject $w_i$"], 
+           loc='upper right', fontsize=15) 
+
+plt.tight_layout(rect=[0, 0, 1, .97])  # adjust layout to fit the title
 plt.show()
 
 
@@ -415,28 +424,30 @@ plt.show()
 """ Posterior distributions of a0 (mean of truncated normal for a_i)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_a0[burn_in:], bins=30)
-plt.axvline(true_a0, color='black', label="True $a_0$")
-plt.axvline(jnp.mean(true_params['a']), color='red', label="Mean true per-subject $a_i$")
-plt.xlabel("$a_0$")
-plt.ylabel("Count")
-plt.legend(loc='upper right')
-plt.suptitle("Posterior distributions", fontsize=16)
-plt.show()
-    
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
 
+# Top plot: Posterior distributions of a0
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_a0[burn_in:], bins=30, alpha=0.7)
+ax1.axvline(true_a0, color='black', linewidth=2, label="True $a_0$")
+ax1.axvline(jnp.mean(true_params['a']), color='red', linewidth=2, label="Mean true per-subject $a_i$")
+ax1.set_xlabel("$a_0$")
+ax1.set_ylabel("Count")
+ax1.legend(loc='upper right')
+ax1.set_title("Posterior distribution", fontsize=16)
 
-""" Posterior distributions of a0 (mean of truncated normal for a_i) shown over time
-"""
+# Bottom plot: Posterior values a0 over time
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_a0[burn_in:], alpha=0.7)
+ax2.axhline(true_a0, color='black', linewidth=2, label="True $a_0$")
+ax2.axhline(jnp.mean(true_params['a']), color='red', linewidth=2, label="Mean true per-subject $a_i$")
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel("$a_0$")
+ax2.legend(loc='upper right')
+ax2.set_title("Posterior values over iterations", fontsize=16)
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_a0[burn_in:])
-plt.axhline(true_a0, color='black', label="True $a_0$")
-plt.axhline(jnp.mean(true_params['a']), color='red', label="Mean true per-subject $a_i$")
-plt.xlabel("Iteration")
-plt.ylabel("$a_0$")
-plt.legend(loc='upper right')
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
 
 
@@ -444,26 +455,30 @@ plt.show()
 """ Posterior distributions of nu_a0 (standard deviation of truncated normal for a_i)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_nu_a0[burn_in:], bins=30)
-plt.axvline(true_nu_a0, color='black', label=r"True $\nu_a$")
-plt.axvline(jnp.std(true_params['a']), color='red', label="Std true per-subject $a_i$")
-plt.ylabel("Count")
-plt.xlabel(r"$\nu_a$")
-plt.legend(loc='upper right')
-plt.show()
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
 
+# Top plot: Posterior distributions nu_a0
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_nu_a0[burn_in:], bins=30, alpha=0.7)
+ax1.axvline(true_nu_a0, color='black', linewidth=2, label=r"True $\nu_a$")
+ax1.axvline(jnp.std(true_params['a']), color='red', linewidth=2, label="Std true per-subject $a_i$")
+ax1.set_xlabel(r"$\nu_a$")
+ax1.set_ylabel("Count")
+ax1.legend(loc='upper right')
+ax1.set_title("Posterior distribution", fontsize=16)
 
-""" Posterior distributions of nu_a0 (standard deviation of truncated normal for a_i) shown over time
-"""
+# Bottom plot: Posterior values nu_a0 over time 
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_nu_a0[burn_in:], alpha=0.7)
+ax2.axhline(true_nu_a0, color='black', linewidth=2, label=r"True $\nu_a$")
+ax2.axhline(jnp.std(true_params['a']), color='red', linewidth=2, label="Std true per-subject $a_i$")
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel(r"$\nu_a$")
+ax2.legend(loc='upper right')
+ax2.set_title("Posterior values over iterations", fontsize=16)
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_nu_a0[burn_in:])
-plt.axhline(true_nu_a0, color='black', label=r"True $\nu_a$")
-plt.axhline(jnp.std(true_params['a']), color='red', label="Std true per-subject $a_i$")
-plt.xlabel("Iteration")
-plt.ylabel(r"$\nu_a$")
-plt.legend(loc='upper right')
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
 
 
@@ -471,24 +486,28 @@ plt.show()
 """ Posterior distributions of alpha (shape parameter of inverse gamma for sigmasq)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_alpha[burn_in:], bins=30)
-plt.axvline(true_alpha, color='black', label=r"True $\alpha$")
-plt.ylabel("Count")
-plt.xlabel(r"$\alpha$")
-plt.legend(loc='upper right')
-plt.show()
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
 
+# Top plot: Posterior distributions of alpha
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_alpha[burn_in:], bins=30, alpha=0.7)
+ax1.axvline(true_alpha, color='black', linewidth=2, label=r"True $\alpha$")
+ax1.set_xlabel(r"$\alpha$")
+ax1.set_ylabel("Count")
+ax1.legend(loc='upper right')
+ax1.set_title("Posterior distribution", fontsize=16)
 
-""" Posterior distributions of alpha (shape parameter of inverse gamma for sigmasq) shown over time
-"""
+# Bottom plot: Posterior values alpha over time 
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_alpha[burn_in:], alpha=0.7)
+ax2.axhline(true_alpha, color='black', linewidth=2, label=r"True $\alpha$")
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel(r"$\alpha$")
+ax2.legend(loc='upper right')
+ax2.set_title("Posterior values over iterations", fontsize=16)
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_alpha[burn_in:])
-plt.axhline(true_alpha, color='black', label=r"True $\alpha$")
-plt.xlabel("Iteration")
-plt.ylabel(r"$\alpha$")
-plt.legend(loc='upper right')
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
 
 
@@ -496,23 +515,34 @@ plt.show()
 """ Posterior distributions of beta (scale parameter of inverse gamma for sigmasq)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_beta[burn_in:], bins=30)
-plt.axvline(true_beta, color='black', label=r"True $\beta$")
-plt.ylabel("Count")
-plt.xlabel(r"$\beta$")
-plt.legend(loc='upper right')
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of beta
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_beta[burn_in:], bins=30, alpha=0.7)
+ax1.axvline(true_beta, color='black', linewidth=2, label=r"True $\beta$")
+ax1.set_xlabel(r"$\beta$")
+ax1.set_ylabel("Count")
+ax1.legend(loc='upper right')
+ax1.set_title("Posterior distribution", fontsize=16)
+
+# Bottom plot: Posterior values beta over time 
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_beta[burn_in:], alpha=0.7)
+ax2.axhline(true_beta, color='black', linewidth=2, label=r"True $\beta$")
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel(r"$\beta$")
+ax2.legend(loc='upper right')
+ax2.set_title("Posterior values over iterations", fontsize=16)
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
-    
 
 
-""" Posterior distributions of beta (scale parameter of inverse gamma for sigmasq) shown over time
+
+
+""" Hypothesis testing
+
+
 """
-
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_beta[burn_in:])
-plt.axhline(true_beta, color='black', label=r"True $\beta$")
-plt.xlabel("Iteration")
-plt.ylabel(r"$\beta$")
-plt.legend(loc='upper right')
-plt.show()
