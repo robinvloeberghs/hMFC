@@ -541,8 +541,30 @@ plt.show()
 
 
 
-
 """ Hypothesis testing
 
+The posteriors distributions of the group-level w's can be used to assess the significance
+of a predictor variable. To do so, we use zero as cutoff and check which side (left or right)
+has the smallest tail. Next, we calculate the area of this smallest tail and multiply by two 
+(to perform two-sided hypothesis testing). The resulting value is the p-value!
+
+Note that performing a one sample t-test against zero based on the per-subject w's is not correct.
+Due to the hierarchical nature of hmfc, these per-subject estimates are not independent.
+In contrast, the t-test assumes the values to be independent.
 
 """
+
+variable_index = 1 # which of the w's you want to test (note that 0 is the intercept)
+
+if jnp.median(posterior_samples_w0[burn_in:,variable_index]) < 0: # right tail is the smallest
+    p_value = (sum(posterior_samples_w0[burn_in:,variable_index] > 0)/len(posterior_samples_w0[burn_in:,variable_index]))*2
+    
+else: # left tail is smallest
+    p_value = (sum(posterior_samples_w0[burn_in:,0] < variable_index)/len(posterior_samples_w0[burn_in:,variable_index]))*2
+
+if p_value < .05:
+    outcome = "significantly"
+else: 
+    outcome = "not significantly"
+    
+print(r"The posterior of w"+str(variable_index)+" with mean "+str(jnp.round(jnp.mean(posterior_samples_w0[burn_in:,variable_index]),decimals=4))+" is "+str(outcome)+" different from 0 (p="+str(p_value)+")")
