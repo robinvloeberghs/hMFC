@@ -58,8 +58,9 @@ from hmfc import * # make sure hmfc.py is located in current working directory
         For example: intercept, stimulus, previous resp, previous stimulus -> num_input = 4
     
 """
-
-data = pd.read_csv('YOUR_DF_HERE.csv')
+# TODO
+#data = pd.read_csv('YOUR_DF_HERE.csv')
+data = pd.read_csv('df_squircles.csv')
 
 num_inputs = 4 
 
@@ -86,10 +87,12 @@ for i in np.unique(data.subj):
     IMPORTANT 
     
     Adjust the names of the variables below according to your dataset (df.evidence, df.prev_evidence, df.prev_resp)
+    and add them to inputs_subj
     """
     
     intercept = jnp.repeat(1, len(df)) # 1 everywhere for model to know this is an intercept
     evidence = jnp.array(df.evidence)  # scaled between -1 and 1
+    # TODO
     prevevidence = jnp.array(df.prevsignevi)  # -1 left, 1 right
     prevresp = jnp.array(df.prevresp)  # -1 left, 1 right
 
@@ -134,8 +137,8 @@ masks = jnp.array(masks)
     num_inputs: number of input variables (specified earlier)
 
 """
-
-num_iters = 500 # number of iterations should be > 500 
+# TODO
+num_iters = 10 #500 # number of iterations should be > 500 
 num_trials = max_num_trials # set to number trials of subject with most trials, masking takes care of the other subjects
 num_subjects = len(inputs)
 
@@ -260,7 +263,8 @@ is still increasing should be considered burn-in.
 # burn_in are the first number of iterations you want to discard before the model is not sampling
 # from the true posterior yet
 
-burn_in = 100 # choose a different value informed by the plot below
+# TODO
+burn_in = 2#100 # choose a different value informed by the plot below
 
 plt.figure(figsize=(8, 6), dpi=600)
 plt.plot(jnp.stack(lps)/emissions.size) # normalized log joint prob
@@ -283,152 +287,167 @@ plt.show()
 """ Posterior distributions of w0 (mean of normal distribution for w_i)
 """
 
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
+fig = plt.figure(figsize=(15, 10), dpi=600)
+fig.suptitle("Posterior distributions (top), posterior values over time (bottom)", fontsize=20)
 
-for d, ax in enumerate(axs):
-    ax.hist(posterior_samples_w0[burn_in:, d], bins=30)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of w0 
+gs_top = gs[0].subgridspec(1, num_inputs, wspace=0.3)
+axs_top = [fig.add_subplot(gs_top[0, i]) for i in range(num_inputs)]
+
+for d, ax in enumerate(axs_top):
+    ax.hist(posterior_samples_w0[burn_in:, d], bins=30, alpha=0.7)
     ax.axvline(x=0, color='red', linewidth=3)
+    
     if d == 0:
         ax.set_ylabel("Count", fontsize=15)
     ax.set_xlabel(r"$w_{:d}$".format(d), fontsize=15)
-    
-plt.show()
-      
 
-""" Posterior distributions of w0 (mean of normal distribution for w_i) shown over time
-"""
+# Bottom plot: Posterior values of w0 over iterations
+gs_bottom = gs[1].subgridspec(1, num_inputs, wspace=0.3)
+axs_bottom = [fig.add_subplot(gs_bottom[0, i]) for i in range(num_inputs)]
 
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
-
-for d, ax in enumerate(axs):
+for d, ax in enumerate(axs_bottom):
     ax.plot(posterior_samples_w0[burn_in:, d])
-    ax.axhline(y=0, color='red')
     ax.set_xlabel("Iteration", fontsize=15)
     ax.set_ylabel(r"$w_{:d}$".format(d), fontsize=15)
-    
-plt.show()
 
+plt.show()
 
 
 
 """ Posterior distributions of nu_w0 (variance of normal distribution for w_i)
 """
 
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
+fig = plt.figure(figsize=(15, 10), dpi=600)
+fig.suptitle("Posterior distributions (top), posterior values over time (bottom)", fontsize=20)
 
-for d, ax in enumerate(axs):
-    ax.hist(posterior_samples_nu_w0[burn_in:, d], bins=30)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of w0 
+gs_top = gs[0].subgridspec(1, num_inputs, wspace=0.3)
+axs_top = [fig.add_subplot(gs_top[0, i]) for i in range(num_inputs)]
+
+for d, ax in enumerate(axs_top):
+    ax.hist(posterior_samples_nu_w0[burn_in:, d], bins=30, alpha=0.7)
+    ax.axvline(x=0, color='red', linewidth=3)
+    
     if d == 0:
         ax.set_ylabel("Count", fontsize=15)
     ax.set_xlabel(r"$\nu_{{w_{:d}}}$".format(d), fontsize=15)
 
-plt.show()
+# Bottom plot: Posterior values of w0 over iterations
+gs_bottom = gs[1].subgridspec(1, num_inputs, wspace=0.3)
+axs_bottom = [fig.add_subplot(gs_bottom[0, i]) for i in range(num_inputs)]
 
-
-""" Posterior distributions of nu_w0 (variance of normal distribution for w_i) shown over time
-"""
-
-fig, axs = plt.subplots(1, num_inputs, sharey=True, figsize=(10, 5), dpi=600)
-fig.suptitle("Posterior distributions", fontsize=16)
-
-for d, ax in enumerate(axs):
+for d, ax in enumerate(axs_bottom):
     ax.plot(posterior_samples_nu_w0[burn_in:, d])
     ax.set_xlabel("Iteration", fontsize=15)
     ax.set_ylabel(r"$\nu_{{w_{:d}}}$".format(d), fontsize=15)
-
+    
 plt.show()
-
 
 
 
 """ Posterior distributions of a0 (mean of truncated normal for a_i)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_a0[burn_in:], bins=30)
-plt.xlabel("$a_0$")
-plt.ylabel("Count")
-plt.title("Posterior distributions", fontsize=16)
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of a0
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_a0[burn_in:], bins=30, alpha=0.7)
+ax1.set_xlabel("$a_0$")
+ax1.set_ylabel("Count")
+ax1.set_title("Posterior distribution", fontsize=20)
+
+# Bottom plot: Posterior values a0 over time
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_a0[burn_in:], alpha=0.7)
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel("$a_0$")
+ax2.set_title("Posterior values over iterations", fontsize=20)
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
-    
-
-""" Posterior distributions of a0 (mean of truncated normal for a_i) shown over time
-"""
-
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_a0[burn_in:])
-plt.xlabel("Iteration")
-plt.ylabel("$a_0$")
-plt.show()
-
 
 
 
 """ Posterior distributions of nu_a0 (standard deviation of truncated normal for a_i)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_nu_a0[burn_in:], bins=30)
-plt.ylabel("Count")
-plt.xlabel(r"$\nu_a$")
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of a0
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_nu_a0[burn_in:], bins=30, alpha=0.7)
+ax1.set_xlabel(r"$\nu_a$")
+ax1.set_ylabel("Count")
+ax1.set_title("Posterior distribution", fontsize=20)
+
+# Bottom plot: Posterior values a0 over time
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_nu_a0[burn_in:], alpha=0.7)
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel(r"$\nu_a$")
+ax2.set_title("Posterior values over iterations", fontsize=20)
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
-
-
-""" Posterior distributions of nu_a0 (standard deviation of truncated normal for a_i) shown over time
-"""
-
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_nu_a0[burn_in:])
-plt.xlabel("Iteration")
-plt.ylabel(r"$\nu_a$")
-plt.show()
-
 
 
 
 """ Posterior distributions of alpha (shape parameter of inverse gamma for sigmasq)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_alpha[burn_in:], bins=30)
-plt.ylabel("Count")
-plt.xlabel(r"$\alpha$")
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
+
+# Top plot: Posterior distributions of a0
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_alpha[burn_in:], bins=30, alpha=0.7)
+ax1.set_xlabel(r"$\alpha$")
+ax1.set_ylabel("Count")
+ax1.set_title("Posterior distribution", fontsize=20)
+
+# Bottom plot: Posterior values a0 over time
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_alpha[burn_in:], alpha=0.7)
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel(r"$\alpha$")
+ax2.set_title("Posterior values over iterations", fontsize=20)
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
-
-
-""" Posterior distributions of alpha (shape parameter of inverse gamma for sigmasq) shown over time
-"""
-
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_alpha[burn_in:])
-plt.xlabel("Iteration")
-plt.ylabel(r"$\alpha$")
-plt.show()
-
 
 
 
 """ Posterior distributions of beta (scale parameter of inverse gamma for sigmasq)
 """
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.hist(posterior_samples_beta[burn_in:], bins=30)
-plt.ylabel("Count")
-plt.xlabel(r"$\beta$")
-plt.show()
-    
+fig = plt.figure(figsize=(8, 10), dpi=600)
+gs = fig.add_gridspec(2, 1, height_ratios=[1, 1])
 
-""" Posterior distributions of beta (scale parameter of inverse gamma for sigmasq) shown over time
-"""
+# Top plot: Posterior distributions of a0
+ax1 = fig.add_subplot(gs[0, 0])
+ax1.hist(posterior_samples_beta[burn_in:], bins=30, alpha=0.7)
+ax1.set_xlabel(r"$\beta$")
+ax1.set_ylabel("Count")
+ax1.set_title("Posterior distribution", fontsize=20)
 
-plt.figure(figsize=(8, 6), dpi=600)
-plt.plot(posterior_samples_beta[burn_in:])
-plt.xlabel("Iteration")
-plt.ylabel(r"$\beta$")
+# Bottom plot: Posterior values a0 over time
+ax2 = fig.add_subplot(gs[1, 0])
+ax2.plot(posterior_samples_beta[burn_in:], alpha=0.7)
+ax2.set_xlabel("Iteration")
+ax2.set_ylabel(r"$\beta$")
+ax2.set_title("Posterior values over iterations", fontsize=20)
+
+plt.tight_layout(rect=[0, 0, 1, 0.96])
 plt.show()
+
 
 
 # ================================================================== #
@@ -528,6 +547,34 @@ with PdfPages("estimated_criterion_fluctuations.pdf") as pdf:
       plt.close()
 
 
+
+""" Hypothesis testing
+
+The posteriors distributions of the group-level w's can be used to assess the significance
+of a predictor variable. To do so, we use zero as cutoff and check which side (left or right)
+has the smallest tail. Next, we calculate the area of this smallest tail and multiply by two 
+(to perform two-sided hypothesis testing). The resulting value is the p-value!
+
+Note that performing a one sample t-test against zero based on the per-subject w's is not correct.
+Due to the hierarchical nature of hmfc, these per-subject estimates are not independent.
+In contrast, the t-test assumes the values to be independent.
+
+"""
+
+variable_index = 1 # which of the w's you want to test (note that 0 is the intercept)
+
+if jnp.median(posterior_samples_w0[burn_in:,variable_index]) < 0: # right tail is the smallest
+    p_value = (sum(posterior_samples_w0[burn_in:,variable_index] > 0)/len(posterior_samples_w0[burn_in:,variable_index]))*2
+    
+else: # left tail is smallest
+    p_value = (sum(posterior_samples_w0[burn_in:,variable_index] < variable_index)/len(posterior_samples_w0[burn_in:,variable_index]))*2
+
+if p_value < .05:
+    outcome = "significantly"
+else: 
+    outcome = "not significantly"
+    
+print(r"The posterior of w"+str(variable_index)+" with mean "+str(jnp.round(jnp.mean(posterior_samples_w0[burn_in:,variable_index]),decimals=4))+" is "+str(outcome)+" different from 0 (p="+str(p_value)+")")
 
 
 
