@@ -45,6 +45,11 @@ pip install -e.
 ```
 
 #### Getting started
+Download the code
+```bash
+git clone git@github.com:robinvloeberghs/hMFC.git
+cd hMFC
+```
 
 Open your favorite Python IDE (for example Spyder):
 ```python
