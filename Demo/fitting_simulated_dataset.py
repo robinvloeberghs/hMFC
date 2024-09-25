@@ -373,7 +373,6 @@ fig.legend([Line2D([0], [0], color='black', linewidth=3),
            [r"True $w$", r"Mean true per-subject $w_i$"], 
            loc='upper right', fontsize=15) 
 
-plt.tight_layout(rect=[0, 0, 1, .97])  # adjust layout to fit the title
 plt.show()
 
 
@@ -416,7 +415,6 @@ fig.legend([Line2D([0], [0], color='black', linewidth=3),
            [r"True $\nu_w$", r"Std true per-subject $w_i$"], 
            loc='upper right', fontsize=15) 
 
-plt.tight_layout(rect=[0, 0, 1, .97])  # adjust layout to fit the title
 plt.show()
 
 
@@ -560,7 +558,7 @@ if jnp.median(posterior_samples_w0[burn_in:,variable_index]) < 0: # right tail i
     p_value = (sum(posterior_samples_w0[burn_in:,variable_index] > 0)/len(posterior_samples_w0[burn_in:,variable_index]))*2
     
 else: # left tail is smallest
-    p_value = (sum(posterior_samples_w0[burn_in:,0] < variable_index)/len(posterior_samples_w0[burn_in:,variable_index]))*2
+    p_value = (sum(posterior_samples_w0[burn_in:,variable_index] < variable_index)/len(posterior_samples_w0[burn_in:,variable_index]))*2
 
 if p_value < .05:
     outcome = "significantly"
