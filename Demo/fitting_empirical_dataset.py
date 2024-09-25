@@ -58,9 +58,8 @@ from hmfc import * # make sure hmfc.py is located in current working directory
         For example: intercept, stimulus, previous resp, previous stimulus -> num_input = 4
     
 """
-# TODO
-#data = pd.read_csv('YOUR_DF_HERE.csv')
-data = pd.read_csv('df_squircles.csv')
+
+data = pd.read_csv('YOUR_DF_HERE.csv')
 
 num_inputs = 4 
 
@@ -92,8 +91,7 @@ for i in np.unique(data.subj):
     
     intercept = jnp.repeat(1, len(df)) # 1 everywhere for model to know this is an intercept
     evidence = jnp.array(df.evidence)  # scaled between -1 and 1
-    # TODO
-    prevevidence = jnp.array(df.prevsignevi)  # -1 left, 1 right
+    prevevidence = jnp.array(df.prevevidence)  # -1 left, 1 right
     prevresp = jnp.array(df.prevresp)  # -1 left, 1 right
 
     resp = jnp.array(df.resp)
@@ -137,8 +135,8 @@ masks = jnp.array(masks)
     num_inputs: number of input variables (specified earlier)
 
 """
-# TODO
-num_iters = 10 #500 # number of iterations should be > 500 
+
+num_iters = 500 # number of iterations should be > 500 
 num_trials = max_num_trials # set to number trials of subject with most trials, masking takes care of the other subjects
 num_subjects = len(inputs)
 
@@ -263,8 +261,7 @@ is still increasing should be considered burn-in.
 # burn_in are the first number of iterations you want to discard before the model is not sampling
 # from the true posterior yet
 
-# TODO
-burn_in = 2#100 # choose a different value informed by the plot below
+burn_in = 100 # choose a different value informed by the plot below
 
 plt.figure(figsize=(8, 6), dpi=600)
 plt.plot(jnp.stack(lps)/emissions.size) # normalized log joint prob
@@ -272,9 +269,6 @@ plt.xlabel("Iteration")
 plt.ylabel("Log joint probability")
 plt.ylim()
 plt.show()
-
-
-
 
 
 
