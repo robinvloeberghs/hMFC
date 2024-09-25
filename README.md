@@ -45,8 +45,9 @@ pip install -e.
 ```
 
 #### Getting started
-Download the code
+Download the code of the hMFC repo
 ```bash
+cd ..
 git clone git@github.com:robinvloeberghs/hMFC.git
 cd hMFC
 ```
