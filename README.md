@@ -5,7 +5,7 @@ Paper: A Bayesian Hierarchical Model of Trial-To-Trial Fluctuations in Decision 
 
 If you use this code, please cite the paper.
 
-Contact: Robin Vloeberghs (robin.vloeberghs@kuleuven.be) / Scott Linderman (scott.linderman@stanford.edu).
+Contact: Robin Vloeberghs (robin.vloeberghs@kuleuven.be)
 
 
 
