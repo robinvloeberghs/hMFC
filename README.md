@@ -26,6 +26,7 @@ This model is written in Python, so you'll need to have a program to run Python 
 ```bash
 conda create -n hmfc python=3.10
 ```
+   * And then activate the environment:
 ```bash
 conda activate hmfc
 ```
@@ -33,16 +34,17 @@ conda activate hmfc
    * Install the required packages using the following commands:
 ```bash
 conda install pip==24.2
-pip install equinox==0.11.7
-pip install seaborn==0.13.2
-pip install matplotlib==3.9.2
-pip install dill==0.3.8
+```
+pip install equinox==0.11.7 seaborn==0.13.2 matplotlib==3.9.2 dill==0.3.8
 ```
 **5. Install Dynamax**
-   * Clone the Dynamax repository and install it:
+   * Clone the Dynamax repository:
 ```bash
 git clone https://github.com/probml/dynamax
 cd dynamax
+```
+   * And install it:
+```bash
 pip install -e.
 ```
 
