@@ -25,6 +25,8 @@ This model is written in Python, so you'll need to have a program to run Python 
    * Create a new conda environment named `hmfc` with Python 3.10:
 ```bash
 conda create -n hmfc python=3.10
+```
+```bash
 conda activate hmfc
 ```
 **4. Install Required Packages**
