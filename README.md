@@ -31,10 +31,12 @@ conda create -n hmfc python=3.10
 conda activate hmfc
 ```
 **4. Install Required Packages**
-   * Install the required packages using the following commands:
+   * First install pip:
 ```bash
 conda install pip==24.2
 ```
+ * Then install the required packages using the following commands:
+```bash
 pip install equinox==0.11.7 seaborn==0.13.2 matplotlib==3.9.2 dill==0.3.8
 ```
 **5. Install Dynamax**
