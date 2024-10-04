@@ -5,6 +5,8 @@ Paper: A Bayesian Hierarchical Model of Trial-To-Trial Fluctuations in Decision 
 
 If you use this code, please cite the paper.
 
+Feel free to contact me when you're having trouble with running the model. Feedback and suggestions on how to improve the repo are welcome!
+
 Contact: Robin Vloeberghs (robin.vloeberghs@kuleuven.be)
 
 
