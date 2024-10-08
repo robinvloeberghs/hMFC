@@ -11,6 +11,11 @@ Created on Fri Feb 23 13:28:44 2024
 Code for plotting parameter recovery stuff (local params, global params, criterion fluctuations).
 50 datasets were simulated, each with 50 subjects.
 Number of trials per subject was varied (500, 1000, 2500, 5000 trials).
+
+Small comment on notation: in the paper we refer to the group-level (hierarchical) parameters
+of the truncated normal as mu_a and sigma_a. In the code these params are referred
+to as a0 and nu_a0, respectively. In a similar vein, the hierarchical parameters of the normal
+distributions are referred to as mu_w and sigma_w. Below, these are called w0 and nu_w0
 """
 
 

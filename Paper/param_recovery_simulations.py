@@ -4,6 +4,17 @@
 """
 
 
+
+"""
+Code to run hMFC on simulated datasets for the parameter recovery study.
+
+Small comment on notation: in the paper we refer to the group-level (hierarchical) parameters
+of the truncated normal as mu_a and sigma_a. In the code these params are referred
+to as a0 and nu_a0, respectively. In a similar vein, the hierarchical parameters of the normal
+distributions are referred to as mu_w and sigma_w. Below, these are called w0 and nu_w0
+"""
+
+
 import equinox as eqx
 
 import jax

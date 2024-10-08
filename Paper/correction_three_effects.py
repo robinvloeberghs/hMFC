@@ -30,6 +30,12 @@ to your own data. Instead, use hmfc.py. If you don't want to estimate criterion 
     We don't update the a0, nu_a, alpha, and beta by removing these steps in the _gibbs_steps_global.
     In gibbs_step_states we don't estimate the latent state but instead return a sequence of zeros.
     
+
+Small comment on notation: in the paper we refer to the group-level (hierarchical) parameters
+of the truncated normal as mu_a and sigma_a. In the code these params are referred
+to as a0 and nu_a0, respectively. In a similar vein, the hierarchical parameters of the normal
+distributions are referred to as mu_w and sigma_w. Below, these are called w0 and nu_w0
+    
 """
 
 
