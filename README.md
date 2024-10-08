@@ -5,15 +5,26 @@ Paper: A Bayesian Hierarchical Model of Trial-To-Trial Fluctuations in Decision 
 
 If you use this code, please cite the paper.
 
-Feel free to contact me when you're having trouble with running the model. Feedback and suggestions on how to improve the repo are welcome!
+Feel free to contact me when you encounter any issues running the model. Feedback and suggestions on how to improve the demo are also welcome!
 
 Contact: Robin Vloeberghs (robin.vloeberghs@kuleuven.be)
 
+---
 
+### Repo structure
+
+#### Demo
+Includes two scripts that demonstrate how hMFC can be applied to both a simulated dataset and an empirical dataset of your choice.
+
+#### Paper
+Provides all the scripts used for simulations and plotting in the paper.
+
+#### hmfc.py
+Contains the full implementation of hMFC. This script will be loaded whenever the model is executed.
 
 ---
 
-#### Installation
+### Installation
 
 This model is written in Python, so you'll need to have a program to run Python code.
 
