@@ -46,8 +46,29 @@ import pandas as pd
 from matplotlib.backends.backend_pdf import PdfPages
 import numpy as np
 
-from hmfc import * # make sure hmfc.py is located in current working directory
 
+import os
+
+
+# make sure hmfc.py is located in current working directory
+def find_and_load_hmfc():
+    # Check if 'hmfc.py' is in the current working directory
+    if os.path.isfile('hmfc.py'):
+        print("Found 'hmfc.py' in the current working directory.")
+        
+    # Check if 'hmfc.py' is in the parent directory
+    elif os.path.isfile(os.path.join('..', 'hmfc.py')):
+        print("Found 'hmfc.py' in the parent directory.")
+        os.chdir('..')  # Change to the parent directory
+        print("Changed directory to the parent directory.")
+    
+    # If not found in either location
+    else:
+        print("hmfc.py not found. Make sure hmfc.py is located in the current working directory.")
+
+# Run the function to check for 'hmfc.py'
+find_and_load_hmfc()
+from hmfc import *
 
 
 
