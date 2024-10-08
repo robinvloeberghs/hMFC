@@ -71,9 +71,10 @@ git clone https://github.com/robinvloeberghs/hMFC
 cd hMFC
 ```
 
-Open your favorite Python IDE (for example Spyder):
+Great, you're done with the installation. From now on, always activate the hmfc environment, cd into the hmfc folder and open your favorite Python IDE (for example Spyder):
 ```python
 conda activate hmfc
+cd hMFC
 spyder
 ```
 
