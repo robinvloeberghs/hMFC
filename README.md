@@ -20,7 +20,7 @@ Includes two scripts that demonstrate how hMFC can be applied to both a simulate
 Provides all the scripts used for simulations and plotting in the paper.
 
 #### hmfc.py
-Contains the full implementation of hMFC. This script will be loaded whenever the model is executed.
+Contains the full implementation of hMFC. This script will be loaded whenever the model is executed (e.g., in the demo scripts).
 
 ---
 
