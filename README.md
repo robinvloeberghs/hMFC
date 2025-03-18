@@ -19,7 +19,7 @@ Includes two scripts that demonstrate how hMFC can be applied to both a simulate
 #### Paper
 Provides all the scripts used for simulations and plotting in the paper.
 
-#### hmfc.py
+#### hmfc module
 Contains the full implementation of hMFC. This script will be loaded whenever the model is executed (e.g., in the demo scripts).
 
 ---
@@ -43,24 +43,15 @@ conda create -n hmfc python=3.10
 ```bash
 conda activate hmfc
 ```
-**4. Install Required Packages**
+**4. Update pip**
    * First install pip:
 ```bash
-conda install pip==24.2
+conda install -U pip
 ```
- * Then install the required packages using the following commands:
-```bash
-pip install equinox==0.11.7 seaborn==0.13.2 matplotlib==3.9.2 dill==0.3.8
+
+**5. Finally, install the hmfc package!**
 ```
-**5. Install Dynamax**
-   * Clone the Dynamax repository:
-```bash
-git clone https://github.com/probml/dynamax
-cd dynamax
-```
-   * And install it:
-```bash
-pip install -e.
+pip install -e .
 ```
 
 #### Getting started
