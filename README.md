@@ -56,7 +56,7 @@ cd ..
 git clone https://github.com/robinvloeberghs/hMFC
 cd hMFC
 pip install -e .
-
+```
 
 #### Getting started
 
