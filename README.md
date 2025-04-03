@@ -43,26 +43,25 @@ conda create -n hmfc python=3.10
 ```bash
 conda activate hmfc
 ```
-**4. Update pip**
+**4. Install pip**
    * First install pip:
 ```bash
-conda install -U pip
+conda install pip
 ```
 
 **5. Finally, install the hmfc package!**
-```
-pip install -e .
-```
-
-#### Getting started
 Download the code of the hMFC repo
 ```bash
 cd ..
 git clone https://github.com/robinvloeberghs/hMFC
 cd hMFC
-```
+pip install -e .
 
-Great, you're done with the installation. From now on, always activate the hmfc environment, cd into the hmfc folder and open your favorite Python IDE (for example Spyder):
+
+#### Getting started
+
+
+Great, you're done with the installation. From now on, always activate the hmfc environment, cd into the hmfc folder and open your favorite Python IDE (for example Spyder or VSCode):
 ```python
 conda activate hmfc
 cd hMFC
