@@ -184,6 +184,7 @@ def _gibbs_step_global_weights_var(key,
     """
 
     sigma_w = jnp.exp(model.log_sigma_w)
+    mu_w = model.mu_w
     ws = params["w"]
     N, D = ws.shape # N = number of subject, D = number of input variables
     sigma_w = jnp.sqrt(tfd.InverseGamma(0.5 * N, 0.5 * jnp.sum((ws - mu_w)**2, axis=0)).sample(seed=key))    # returns (D,) samples of \sigma_w
