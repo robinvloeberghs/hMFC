@@ -164,25 +164,44 @@ def _gibbs_step_global_weights(key,
                                model : HierarchicalBernoulliLDS,
                                params : dict):
     r"""
-    Update the global params mu_w, sigma_w, sigma_mu_x with Gibbs
+    Update the global params mu_w with Gibbs
     """
-    k1, k2, k3 = jr.split(key, 3)
-
-    # Update the global mean, mu_w
+    
     sigma_w = jnp.exp(model.log_sigma_w)
     ws = params["w"]
     N, D = ws.shape # N = number of subject, D = number of input variables
-    mu_w = tfd.Normal(ws.mean(axis=0), sigma_w / jnp.sqrt(N)).sample(seed=k1) # draw mu_w for each input variable
+    mu_w = tfd.Normal(ws.mean(axis=0), sigma_w / jnp.sqrt(N)).sample(seed=key) # returns (D,) samples of \mu_w
+    
     model = eqx.tree_at(lambda m: m.mu_w, model, mu_w)
 
-    # Update the global variance, sigma_w^2
-    sigma_w = jnp.sqrt(tfd.InverseGamma(0.5 * N, 0.5 * jnp.sum((ws - mu_w)**2, axis=0)).sample(seed=k2))    # returns (D,) samples of \sigma_w
+    return model
+
+def _gibbs_step_global_weights_var(key,
+                                   model : HierarchicalBernoulliLDS,
+                                   params : dict):
+    r"""
+    Update the global params sigmasq_w with Gibbs
+    """
+
+    sigma_w = jnp.exp(model.log_sigma_w)
+    ws = params["w"]
+    N, D = ws.shape # N = number of subject, D = number of input variables
+    sigma_w = jnp.sqrt(tfd.InverseGamma(0.5 * N, 0.5 * jnp.sum((ws - mu_w)**2, axis=0)).sample(seed=key))    # returns (D,) samples of \sigma_w
     sigma_w = jnp.clip(sigma_w, a_min=1e-4) # specify lower bound such that sigma_w cannot go to zero
 
     model = eqx.tree_at(lambda m: m.log_sigma_w, model, jnp.log(sigma_w))
 
-    # Update the global bias variance, sigma_mu_x^2
+    return model
+
+def _gibbs_step_global_bias_var(key,
+                               model : HierarchicalBernoulliLDS,
+                               params : dict):
+    r"""
+    Update the global params sigmasq_mu_x with Gibbs
+    """
+
     mu_xs = params["mu_x"]
+    N = mu_xs.shape
     sigma_mu_x = jnp.sqrt(tfd.InverseGamma(0.5 * N, 0.5 * jnp.sum((mu_xs - 0)**2, axis=0)).sample(seed=k3))
     sigma_mu_x = jnp.clip(sigma_mu_x, a_min=1e-4) # specify lower bound such that sigma_mu_x cannot go to zero
 
@@ -190,14 +209,13 @@ def _gibbs_step_global_weights(key,
 
     return model
 
-
 def _gibbs_step_global_ar(key,
                           model: HierarchicalBernoulliLDS,
                           params: dict,
                           proposal_variance: float=0.05**2,
                           num_steps: int=20):
     r"""
-    Update the global params mu_a, sigma_a with RWMH
+    Update the global params mu_a with RWMH
     """
     def _log_prob(logit_mu_a):
         lp = tfd.TransformedDistribution(
@@ -225,7 +243,7 @@ def _gibbs_step_global_ar_var(key,
                               proposal_variance: float=0.05**2,
                               num_steps: int=20):
     r"""
-    Update the global params mu_a, sigma_a with RWMH
+    Update the global params sigma_a with RWMH
     """
 
     def _log_prob(log_sigma_a):
@@ -246,6 +264,7 @@ def _gibbs_step_global_ar_var(key,
                               num_steps)
 
     model = eqx.tree_at(lambda m: m.log_sigma_a, model, log_sigma_a)
+    
     return model
 
 def _gibbs_step_global_mu_sigmasq(key,
@@ -275,6 +294,7 @@ def _gibbs_step_global_mu_sigmasq(key,
                                    num_steps_mu)
 
     model = eqx.tree_at(lambda m: m.log_mu_sigmasq, model, log_mu_sigmasq)
+    
     return model
 
 def _gibbs_step_global_beta_sigmasq(key,
@@ -307,22 +327,30 @@ def _gibbs_step_global_beta_sigmasq(key,
                               num_steps_beta)
 
     model = eqx.tree_at(lambda m: m.log_beta_sigmasq, model, log_beta)
+    
     return model
 
 def gibbs_step_global_params(key,
                              model : HierarchicalBernoulliLDS,
                              params : dict,
                              update_global_weights: bool=True,
+                             update_global_weights_var: bool=True,
+                             update_global_bias_var: bool=True,
                              update_global_ar: bool=True,
                              update_global_ar_var: bool=True,
                              update_global_mu_sigmasq: bool=True,
                              update_global_beta_sigmasq: bool=True):
-    k1, k2, k3, k4, k5 = jr.split(key, 5)
+    
+    k1, k2, k3, k4, k5, k6, k7 = jr.split(key, 7)
+    
     if update_global_weights: model = _gibbs_step_global_weights(k1, model, params)
-    if update_global_ar: model = _gibbs_step_global_ar(k2, model, params)
-    if update_global_ar_var: model = _gibbs_step_global_ar_var(k3, model, params)
-    if update_global_mu_sigmasq: model = _gibbs_step_global_mu_sigmasq(k4, model, params)
-    if update_global_beta_sigmasq: model = _gibbs_step_global_beta_sigmasq(k5, model, params)
+    if update_global_weights_var: model = _gibbs_step_global_weights_var(k2, model, params)
+    if update_global_bias_var: model = _gibbs_step_global_bias_var(k3, model, params)
+    if update_global_ar: model = _gibbs_step_global_ar(k4, model, params)
+    if update_global_ar_var: model = _gibbs_step_global_ar_var(k5, model, params)
+    if update_global_mu_sigmasq: model = _gibbs_step_global_mu_sigmasq(k6, model, params)
+    if update_global_beta_sigmasq: model = _gibbs_step_global_beta_sigmasq(k7, model, params)
+        
     return model
 
 def _pg_sample(key, b, c):
@@ -354,7 +382,7 @@ def gibbs_step_pg(key,
                              inputs,
                              params["w"])
 
-@partial(jax.jit, static_argnums=(7, 8, 9, 10, 11))
+@partial(jax.jit, static_argnums=(7, 8, 9, 10, 11, 12, 13))
 def gibbs_step(key,
                emissions : Float[Array, "num_subjects num_trials"],
                masks: Float[Array, "num_subjects num_trials"],
@@ -363,6 +391,8 @@ def gibbs_step(key,
                params: dict,
                model : HierarchicalBernoulliLDS,
                update_global_weights: bool=True,
+               update_global_weights_var: bool=True,
+               update_global_bias_var: bool=True,
                update_global_ar: bool=True,
                update_global_ar_var: bool=True,
                update_global_mu_sigmasq: bool=True,
@@ -385,6 +415,8 @@ def gibbs_step(key,
     # 4. Sample new global params
     model = gibbs_step_global_params(k4, model, params,
                                      update_global_weights=update_global_weights,
+                                     update_global_weights_var=update_global_weights_var,
+                                     update_global_bias_var=update_global_bias_var,
                                      update_global_ar=update_global_ar,
                                      update_global_ar_var=update_global_ar_var,
                                      update_global_mu_sigmasq=update_global_mu_sigmasq,
