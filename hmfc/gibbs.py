@@ -56,9 +56,9 @@ def gibbs_step_states(key,
 
         # Run the information form sampling algorithm
         x_it = lds_info_sample(key,
-                              J_diag[:, None, None],
-                              J_lower_diag[:, None, None],
-                              h[:, None])[:, 0]                 # (T,)
+                               J_diag[:, None, None],
+                               J_lower_diag[:, None, None],
+                               h[:, None])[:, 0]                 # (T,)
 
         return x_it
 
@@ -82,14 +82,19 @@ def gibbs_step_local_params(key,
     Perform one Gibbs step to update the local parameters.
     """
     num_subjects, num_trials, num_inputs = inputs.shape
-    mu_a = sigmoid(model.logit_mu_a)
-    sigma_a = jnp.exp(model.log_sigma_a)
+    mu_a = model.mu_a
+    sigma_a = model.sigma_a
     mu_w = model.mu_w
-    sigma_w = jnp.exp(model.log_sigma_w)
-    sigma_mu_x = jnp.exp(model.log_sigma_mu_x)
+    sigma_w = model.sigma_w
+    sigma_mu_x = model.sigma_mu_x
     
     def _sample_one(key, y_it, m_i, x_it, u_i, pg_i, params_i):
         k1, k2, k3, k4 = jr.split(key, 4)
+
+        w_i = params_i["w"]
+        a_i = params_i["a"]
+        mu_i = params_i["mu_x"]
+        sigmasq_i = params_i["sigmasq"]
 
         # Gibbs sample the input weights
         J_w = 1.0 / sigma_w**2 * jnp.eye(num_inputs)
@@ -100,29 +105,25 @@ def gibbs_step_local_params(key,
         w_i = _sample_info_gaussian(k1, J_w, h_w)
 
         # Gibbs sample the dynamics coefficient (given sigmasq_i, b_i, and rest)
-        a_i = params_i["a"]
-        mu_x_i = params_i["mu_x"]
-        b_i = mu_x_i * (1 - a_i)
-        sigmasq_i = params_i["sigmasq"]
-        J_a = 1.0 / sigma_a**2 + jnp.sum(m_i[1:] * x_it[:-1]**2) / sigmasq_i
-        h_a = mu_a / sigma_a**2 + jnp.sum(m_i[1:] * x_it[:-1] * (x_it[1:] - b_i)) / sigmasq_i
+        dx_it = x_it - mu_i
+        J_a = 1.0 / sigma_a**2 + jnp.sum(m_i[1:] * dx_it[:-1]**2) / sigmasq_i
+        h_a = mu_a / sigma_a**2 + jnp.sum(m_i[1:] * dx_it[:-1] * dx_it[1:]) / sigmasq_i
         a_i = tfd.TruncatedNormal(h_a / J_a, jnp.sqrt(1.0 / J_a), 0.0, A_MAX).sample(seed=k2)
 
         # Gibbs sample the bias term (given a_i and rest)
-        # p(mu_x | a, x)
-        # \propto N(mu_x | 0, sigma_mu_x^2) N(x_1 | mu_x, 1) \prod_{t=1}^{T-1} N(x_{t+1} - a x_t|  mu_x (1 - a), \sigma^2)
-        # \propto N(mu_x | 0, sigma_mu_x^2) N(x_1 | mu_x, 1) \prod_{t=1}^{T-1} N((x_{t+1} - a x_t) / (1 - a) |  mu_x , \sigma^2 / (1 - a)^2)
-        J_mu_x = 1/sigma_mu_x**2 + m_i[0] + jnp.sum(m_i[1:]) * (1 - a_i)**2 / sigmasq_i
-        h_mu_x = 0 + m_i[0] * x_it[0] + jnp.sum(m_i[1:] * (x_it[1:] - a_i * x_it[:-1]) / (1 - a_i)) * (1 - a_i)**2 / sigmasq_i
-        mu_x_i = tfd.Normal(h_mu_x / J_mu_x, jnp.sqrt(1.0 / J_mu_x)).sample(seed=k3)
-        b_i = mu_x_i * (1 - a_i)
+        J_mu_x = 1 / sigma_mu_x**2 
+        J_mu_x += m_i[0] * 1 / SIGMASQ0
+        J_mu_x += jnp.sum(m_i[1:]) * (1 - a_i)**2 / sigmasq_i
+        h_mu_x = m_i[0] * x_it[0]
+        h_mu_x += jnp.sum(m_i[1:] * (x_it[1:] - a_i * x_it[:-1]) * (1 - a_i)) / sigmasq_i
+        mu_i = tfd.Normal(h_mu_x / J_mu_x, jnp.sqrt(1.0 / J_mu_x)).sample(seed=k3)
 
         # Gibbs sample the dynamics noise variance (given a_i and rest)
         alpha0, beta0 = convert_mean_to_std_ig_params(model.mu_sigmasq, model.beta_sigmasq)
         alpha_post = alpha0 + 0.5 * jnp.sum(m_i[1:])
-        beta_post = beta0 + 0.5 * jnp.sum(m_i[1:] * (x_it[1:] - a_i * x_it[:-1] - b_i)**2)
+        beta_post = beta0 + 0.5 * jnp.sum(m_i[1:] * (x_it[1:] - a_i * x_it[:-1] - (1 - a_i) * mu_i)**2)
         sigmasq_i = tfd.InverseGamma(alpha_post, beta_post).sample(seed=k4)
-        return dict(a=a_i, mu_x=mu_x_i, w=w_i, sigmasq=sigmasq_i)
+        return dict(a=a_i, mu_x=mu_i, w=w_i, sigmasq=sigmasq_i)
 
     return vmap(_sample_one)(jr.split(key, num_subjects),
                              emissions,
