@@ -204,7 +204,7 @@ def _gibbs_step_global_bias_var(key,
 
     mu_xs = params["mu_x"]
     N, = mu_xs.shape
-    sigma_mu_x = jnp.sqrt(tfd.InverseGamma(0.5 * N, 0.5 * jnp.sum((mu_xs - 0)**2, axis=0)).sample(seed=key))
+    sigma_mu_x = jnp.sqrt(tfd.InverseGamma(2.1 + 0.5 * N, 1.1 + 0.5 * jnp.sum((mu_xs - 0)**2, axis=0)).sample(seed=key))
     sigma_mu_x = jnp.clip(sigma_mu_x, a_min=1e-4) # specify lower bound such that sigma_mu_x cannot go to zero
 
     model = eqx.tree_at(lambda m: m.log_sigma_mu_x, model, jnp.log(sigma_mu_x))
