@@ -9,7 +9,7 @@ from jax.nn import sigmoid
 from jaxtyping import Float, Array
 from tensorflow_probability.substrates import jax as tfp
 
-from hmfc.constants import A_MAX, SIGMA_A_MAX, PG_TRUNC, SIGMASQ0
+from hmfc.constants import A_MAX, SIGMA_A_MIN, SIGMA_A_MAX, PG_TRUNC, SIGMASQ0
 from hmfc.lds import lds_info_sample, _sample_info_gaussian
 from hmfc.model import HierarchicalBernoulliLDS
 from hmfc.utils import convert_mean_to_std_ig_params
@@ -214,7 +214,7 @@ def _gibbs_step_global_bias_var(key,
 def _gibbs_step_global_ar(key,
                           model: HierarchicalBernoulliLDS,
                           params: dict,
-                          proposal_variance: float=0.05**2,
+                          proposal_variance: float=0.1**2,
                           num_steps: int=20):
     r"""
     Update the global params mu_a with RWMH
@@ -242,7 +242,7 @@ def _gibbs_step_global_ar(key,
 def _gibbs_step_global_ar_var(key,
                               model: HierarchicalBernoulliLDS,
                               params: dict,
-                              proposal_variance: float=0.05**2,
+                              proposal_variance: float=0.1**2,
                               num_steps: int=20):
     r"""
     Update the global params sigma_a with RWMH
@@ -250,7 +250,7 @@ def _gibbs_step_global_ar_var(key,
 
     def _log_prob(log_sigma_a):
         lp = tfd.TransformedDistribution(
-            tfd.Uniform(0, SIGMA_A_MAX),
+            tfd.Uniform(SIGMA_A_MIN, SIGMA_A_MAX),
             tfb.Log(),
         ).log_prob(log_sigma_a)
 
@@ -302,7 +302,7 @@ def _gibbs_step_global_mu_sigmasq(key,
 def _gibbs_step_global_beta_sigmasq(key,
                                     model: HierarchicalBernoulliLDS,
                                     params: dict,
-                                    proposal_variance_beta: float=0.1,
+                                    proposal_variance_beta: float=0.1**2,
                                     num_steps_beta: int=20):
     r"""
     Update beta of inverse gamma for sigmasq with RWMH
