@@ -3,7 +3,7 @@
 #### param_recovery_simulations.py
 Contains all the code to run the simulations for the parameter recovery and write away the data in .csv and .dil files.
 
-#### param_recovery_plotting.py
+#### param_recovery_plotting.ipynb
 Used to create all the plots related to the parameter recovery of hMFC. In order to run this script, all .csv and .dil files have to be loaded in.
 
 The .csv files can be found in the map *"csv files for param recovery plotting"*. The .dil files can be retrieved from https://osf.io/pg4m6/.
