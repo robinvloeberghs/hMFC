@@ -188,7 +188,7 @@ def _gibbs_step_global_weights_var(key,
     mu_w = model.mu_w
     ws = params["w"]
     N, D = ws.shape # N = number of subject, D = number of input variables
-    sigma_w = jnp.sqrt(tfd.InverseGamma(0.5 * N, 0.5 * jnp.sum((ws - mu_w)**2, axis=0)).sample(seed=key))    # returns (D,) samples of \sigma_w
+    sigma_w = jnp.sqrt(tfd.InverseGamma(2.1 + 0.5 * N, 1.1 + 0.5 * jnp.sum((ws - mu_w)**2, axis=0)).sample(seed=key))    # returns (D,) samples of \sigma_w
     sigma_w = jnp.clip(sigma_w, a_min=1e-4) # specify lower bound such that sigma_w cannot go to zero
 
     model = eqx.tree_at(lambda m: m.log_sigma_w, model, jnp.log(sigma_w))
@@ -354,6 +354,7 @@ def gibbs_step_global_params(key,
     if update_global_beta_sigmasq: model = _gibbs_step_global_beta_sigmasq(k7, model, params)
         
     return model
+
 
 def _pg_sample(key, b, c):
     '''pg(b,c) =
