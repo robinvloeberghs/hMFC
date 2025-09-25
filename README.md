@@ -1,8 +1,7 @@
 # hMFC
 Repository for the Hierarchical Model for Fluctuations in Criterion (hMFC), a hierarchical Bayesian framework that allows the estimation of trial-by-trial fluctuations in decision criterion.
 
-Paper: A Bayesian Hierarchical Model of Trial-To-Trial Fluctuations in Decision Criterion, bioRxiv https://doi.org/10.1101/2024.07.30.605869.
-
+Paper: A Bayesian Hierarchical Model of Trial-To-Trial Fluctuations in Decision Criterion, PLOS Computational Biology https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1013291
 If you use this code, please cite the paper.
 
 Feel free to contact me when you encounter any issues running the model. Feedback and suggestions on how to improve the demo are also welcome!
